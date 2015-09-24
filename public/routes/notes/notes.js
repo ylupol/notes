@@ -1,9 +1,10 @@
-var module = angular.module("myapp", ['dndLists']);
-module.controller("NotesController", function($scope, $http) {
+module.controller("NotesController", function($scope, $http, $routeParams, $location) {
     $scope.notes = [];
 
-    var update = function(params) {
-        $http.get("/notes", params)
+    $scope.activeSection = $routeParams.section;
+
+    var update = function() {
+        $http.get("/notes", {params : {section: $scope.activeSection}})
             .success(function (notes) {
                 $scope.notes = notes;
             });
@@ -14,7 +15,7 @@ module.controller("NotesController", function($scope, $http) {
         var note = {text: $scope.text};
         note.section = $scope.activeSection;
         note.tags = $scope.tags;
-        $http.post("/notes", note).success(function(){
+        $http.post("/notes", note).success(function() {
             $scope.text = "";
             update();
         })
@@ -30,7 +31,7 @@ module.controller("NotesController", function($scope, $http) {
         $http.get("/sections").success(function(sections) {
             $scope.sections = sections;
             if ($scope.sections.length > 0) {
-                $scope.activeSection = $scope.sections[0].title;
+                $scope.activeSection = $routeParams.section;
             }
             update();
         });
@@ -41,11 +42,12 @@ module.controller("NotesController", function($scope, $http) {
     $scope.showSection = function(section) {
         $scope.activeSection = section.title;
         update();
+        $location.path(section.title);
     }
 
     $scope.withSections = function() {
         if ($scope.sections && $scope.sections.length > 0) {
-            $http.post("/sections/replase", $scope.sections);
+            $http.post("/sections/replace", $scope.sections);
         }
     };
 
